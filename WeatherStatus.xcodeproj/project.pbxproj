@@ -11,6 +11,8 @@
 		4781A495232837BE00F0AC3F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4781A494232837BE00F0AC3F /* ViewController.swift */; };
 		4781A497232837C000F0AC3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4781A496232837C000F0AC3F /* Assets.xcassets */; };
 		4781A49A232837C000F0AC3F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4781A498232837C000F0AC3F /* Main.storyboard */; };
+		4781A4A32328428100F0AC3F /* StatusBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4781A4A22328428100F0AC3F /* StatusBarManager.swift */; };
+		4781A4A52328432800F0AC3F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4781A4A42328432800F0AC3F /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,8 @@
 		4781A499232837C000F0AC3F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		4781A49B232837C000F0AC3F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4781A49C232837C000F0AC3F /* WeatherStatus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WeatherStatus.entitlements; sourceTree = "<group>"; };
+		4781A4A22328428100F0AC3F /* StatusBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarManager.swift; sourceTree = "<group>"; };
+		4781A4A42328432800F0AC3F /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +63,8 @@
 				4781A498232837C000F0AC3F /* Main.storyboard */,
 				4781A49B232837C000F0AC3F /* Info.plist */,
 				4781A49C232837C000F0AC3F /* WeatherStatus.entitlements */,
+				4781A4A22328428100F0AC3F /* StatusBarManager.swift */,
+				4781A4A42328432800F0AC3F /* Extensions.swift */,
 			);
 			path = WeatherStatus;
 			sourceTree = "<group>";
@@ -133,8 +139,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4781A4A32328428100F0AC3F /* StatusBarManager.swift in Sources */,
 				4781A495232837BE00F0AC3F /* ViewController.swift in Sources */,
 				4781A493232837BE00F0AC3F /* AppDelegate.swift in Sources */,
+				4781A4A52328432800F0AC3F /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
