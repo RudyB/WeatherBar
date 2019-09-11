@@ -17,7 +17,16 @@ class StatusBarManager: NSObject
     
     var menuObserver: CFRunLoopObserver?
     
+    private let weatherUpdater: WeatherUpdater
+    
     // MARK:- Menu Items
+    
+    private lazy var currentConditionsMenuItem: NSMenuItem = {
+        let item = NSMenuItem()
+        item.isEnabled = false
+        item.title = "Loading Weather Conditions"
+        return item
+    }()
     
     private lazy var updateWeatherMenuItem: NSMenuItem = {
         let item = NSMenuItem()
@@ -31,7 +40,7 @@ class StatusBarManager: NSObject
     private lazy var temperatureOptionMenuItem: NSMenuItem = {
         let item = NSMenuItem()
         item.title = "Show Temperature"
-        item.state = .on
+        item.state = .off
         item.target = self
         item.action = #selector(StatusBarManager.ShowTemperature)
         return item
@@ -58,17 +67,43 @@ class StatusBarManager: NSObject
     
     // MARK:- Public Methods
     override init() {
+        
+        let apiKey = ProcessInfo.processInfo.environment["API_KEY"]
+        weatherUpdater = WeatherUpdater(APIKey: apiKey ?? "")
         super.init()
         
         if let button = statusItem.button {
-            button.title = "67℉"
-            //button.image = NSImage(named:NSImage.Name("default"))?.tint(color:  NSColor.black)
+            button.title = "--℉"
+            button.image = NSImage(named: NSImage.Name("default"))!
+                .tint(color: NSColor.black)
+                .resized(to: NSSize(width: 15, height: 15))
             ConfigureMenu()
+            weatherUpdater.onCurrentForecastFetched = onWeatherFetched(_:)
+            weatherUpdater.refreshWeatherConditions()
         }
         
     }
     
     // MARK:- Private Methods
+    
+    private func onWeatherFetched(_ result: APIResult<CurrentWeather>)
+    {
+        guard let button = statusItem.button else { return }
+        
+        switch result {
+        case .failure(let error):
+            print(error)
+        case .success(let weather):
+            DispatchQueue.main.async { [weak self] in
+                self?.currentConditionsMenuItem.title = "\(weather.apparentTemperatureString) \(weather.summary)"
+                button.image = weather.icon.image
+                    .tint(color: NSColor.black)
+                    .resized(to: NSSize(width: 15, height: 15))
+            }
+            
+        }
+    }
+    
     private func ConfigureMenu()
     {
         let menu = NSMenu()
@@ -76,6 +111,7 @@ class StatusBarManager: NSObject
         menu.delegate = self
         menu.autoenablesItems = false
         
+        menu.addItem(currentConditionsMenuItem)
         menu.addItem(updateWeatherMenuItem)
         menu.addItem(temperatureOptionMenuItem)
         menu.addItem(NSMenuItem.separator())
@@ -92,6 +128,7 @@ class StatusBarManager: NSObject
     @objc private func UpdateWeather()
     {
         print("Update Weather")
+        weatherUpdater.refreshWeatherConditions()
     }
     
     @objc func ShowTemperature(sender: NSMenuItem)

@@ -11,11 +11,11 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     
-    let manager = StatusBarManager()
+    var manager:  StatusBarManager!
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
-        
+        manager = StatusBarManager()
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
