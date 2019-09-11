@@ -1,0 +1,20 @@
+PODS:
+  - Houston (0.2.1)
+  - RateLimit (2.1.2)
+
+DEPENDENCIES:
+  - Houston
+  - RateLimit
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Houston
+    - RateLimit
+
+SPEC CHECKSUMS:
+  Houston: 0efbaa54a60b1e157e723de4c48d8167b3372027
+  RateLimit: 3652039be00c614d0f6e468026edd6760463a425
+
+PODFILE CHECKSUM: ed84d741cf3bcde4db2d391f8b99aee0cfd74606
+
+COCOAPODS: 1.7.5

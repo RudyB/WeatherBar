@@ -21,6 +21,14 @@ class StatusBarManager: NSObject
     
     // MARK:- Menu Items
     
+    private lazy var lastUpdateMenuItem: NSMenuItem = {
+        let item = NSMenuItem()
+        item.isEnabled = false
+        item.isHidden = true
+        item.title = "Weather Not Yet Fetched"
+        return item
+    }()
+    
     private lazy var currentConditionsMenuItem: NSMenuItem = {
         let item = NSMenuItem()
         item.isEnabled = false
@@ -56,7 +64,7 @@ class StatusBarManager: NSObject
     }()
     
     private lazy var quitMenuItem: NSMenuItem = {
-       let item = NSMenuItem()
+        let item = NSMenuItem()
         item.title = "Quit"
         item.action = #selector(NSApplication.terminate(_:))
         item.keyEquivalent = "q"
@@ -95,7 +103,13 @@ class StatusBarManager: NSObject
             print(error)
         case .success(let weather):
             DispatchQueue.main.async { [weak self] in
+                
+                let dateFormatter = DateFormatter()
+                dateFormatter.timeStyle = .short
+                dateFormatter.dateStyle = .short
+                
                 self?.currentConditionsMenuItem.title = "\(weather.apparentTemperatureString) \(weather.summary)"
+                self?.lastUpdateMenuItem.title = "Last Update: \(dateFormatter.string(from: Date()))"
                 button.image = weather.icon.image
                     .tint(color: NSColor.black)
                     .resized(to: NSSize(width: 15, height: 15))
@@ -112,6 +126,7 @@ class StatusBarManager: NSObject
         menu.autoenablesItems = false
         
         menu.addItem(currentConditionsMenuItem)
+        menu.addItem(lastUpdateMenuItem)
         menu.addItem(updateWeatherMenuItem)
         menu.addItem(temperatureOptionMenuItem)
         menu.addItem(NSMenuItem.separator())
@@ -120,7 +135,9 @@ class StatusBarManager: NSObject
         
         statusItem.menu = menu
         
+        hiddenMenuItems.append(lastUpdateMenuItem)
         hiddenMenuItems.append(updateWeatherMenuItem)
+        
     }
     
     // MARK:- Menu Handling Methods
@@ -165,7 +182,7 @@ extension StatusBarManager : NSMenuDelegate {
     }
     
     func menuWillOpen(_ menu: NSMenu) {
-       
+        
         if(menuObserver == nil)
         {
             menuObserver =  CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeWaiting.rawValue, true, 0) { [weak self] (_, _) in
