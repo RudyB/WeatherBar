@@ -34,19 +34,26 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     
     
     func updateLocation() {
+        Logger.verbose("Request to Update Location")
         geocoderRateLimiter.reset() // Reset the timer on the geocoder rate limiter
         manager.requestLocation() // Request a new location
-        Logger.verbose("Request to Update Location")
     }
     
     // MARK: CLLocationManagerDelegate
     
     internal func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         switch status {
+        case .authorized:
+            fallthrough
         case .authorizedAlways:
-            manager.requestLocation()
-        default:
+            Logger.debug("Use of Location Authorized")
+            updateLocation()
+        case .restricted, .denied:
             Logger.error("User has not properly configured location permission")
+        case .notDetermined:
+            Logger.debug("Application location permissions not determined")
+        default:
+            fatalError()
         }
         
     }

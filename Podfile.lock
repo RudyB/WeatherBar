@@ -1,5 +1,5 @@
 PODS:
-  - Houston (0.2.1)
+  - Houston (0.2.2)
   - RateLimit (2.1.2)
 
 DEPENDENCIES:
@@ -12,7 +12,7 @@ SPEC REPOS:
     - RateLimit
 
 SPEC CHECKSUMS:
-  Houston: 0efbaa54a60b1e157e723de4c48d8167b3372027
+  Houston: c5865bdca6bcec5b3ce6570c49fcd19392a29778
   RateLimit: 3652039be00c614d0f6e468026edd6760463a425
 
 PODFILE CHECKSUM: ed84d741cf3bcde4db2d391f8b99aee0cfd74606

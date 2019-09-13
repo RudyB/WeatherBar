@@ -7,7 +7,7 @@
 //
 
 import Cocoa
-
+import Houston
 
 class StatusBarManager: NSObject
 {
@@ -29,16 +29,16 @@ class StatusBarManager: NSObject
         return item
     }()
     
-    private lazy var currentConditionsMenuItem: NSMenuItem = {
+    private lazy var statusMenuItem: NSMenuItem = {
         let item = NSMenuItem()
         item.isEnabled = false
-        item.title = "Loading Weather Conditions"
+        item.title = "Starting..."
         return item
     }()
     
     private lazy var updateWeatherMenuItem: NSMenuItem = {
         let item = NSMenuItem()
-        item.title = "Update"
+        item.title = "Refresh"
         item.target = self
         item.isHidden = true
         item.action = #selector(StatusBarManager.UpdateWeather)
@@ -82,11 +82,9 @@ class StatusBarManager: NSObject
         
         if let button = statusItem.button {
             button.title = "--℉"
-            button.image = NSImage(named: NSImage.Name("default"))!
-                .tint(color: NSColor.black)
-                .resized(to: NSSize(width: 15, height: 15))
+            button.image = NSImage(named: NSImage.Name("default"))
             ConfigureMenu()
-            weatherUpdater.onCurrentForecastFetched = onWeatherFetched(_:)
+            weatherUpdater.onStateChange = onStateChange
             weatherUpdater.refreshWeatherConditions()
         }
         
@@ -94,25 +92,28 @@ class StatusBarManager: NSObject
     
     // MARK:- Private Methods
     
-    private func onWeatherFetched(_ result: APIResult<CurrentWeather>)
+    private func onStateChange(_ result: APIResult<WeatherUpdater.State>)
     {
         guard let button = statusItem.button else { return }
         
         switch result {
         case .failure(let error):
-            print(error)
-        case .success(let weather):
+            Logger.error(error)
+            self.statusMenuItem.title = "Failed to Update Weather"
+        case .success(let state):
             DispatchQueue.main.async { [weak self] in
-                
-                let dateFormatter = DateFormatter()
-                dateFormatter.timeStyle = .short
-                dateFormatter.dateStyle = .short
-                
-                self?.currentConditionsMenuItem.title = "\(weather.apparentTemperatureString) \(weather.summary)"
-                self?.lastUpdateMenuItem.title = "Last Update: \(dateFormatter.string(from: Date()))"
-                button.image = weather.icon.image
-                    .tint(color: NSColor.black)
-                    .resized(to: NSSize(width: 15, height: 15))
+                self?.statusMenuItem.title = state.description
+                if case WeatherUpdater.State.done(_, let weather) = state {
+                    button.image = weather.icon.image
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.timeStyle = .short
+                    dateFormatter.dateStyle = .short
+                    self?.lastUpdateMenuItem.title = "Last Update: \(dateFormatter.string(from: Date()))"
+                    self?.lastUpdateMenuItem.isHidden = false
+                }
+                else {
+                    self?.lastUpdateMenuItem.isHidden = true
+                }
             }
             
         }
@@ -125,17 +126,17 @@ class StatusBarManager: NSObject
         menu.delegate = self
         menu.autoenablesItems = false
         
-        menu.addItem(currentConditionsMenuItem)
+        menu.addItem(statusMenuItem)
         menu.addItem(lastUpdateMenuItem)
-        menu.addItem(updateWeatherMenuItem)
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(temperatureOptionMenuItem)
+        menu.addItem(updateWeatherMenuItem)
         menu.addItem(NSMenuItem.separator())
         menu.addItem(settingsMenuItem)
         menu.addItem(quitMenuItem)
         
         statusItem.menu = menu
-        
-        hiddenMenuItems.append(lastUpdateMenuItem)
+
         hiddenMenuItems.append(updateWeatherMenuItem)
         
     }
@@ -144,13 +145,13 @@ class StatusBarManager: NSObject
     
     @objc private func UpdateWeather()
     {
-        print("Update Weather")
+        Logger.verbose("Update Weather")
         weatherUpdater.refreshWeatherConditions()
     }
     
     @objc func ShowTemperature(sender: NSMenuItem)
     {
-        print("Show Temperature")
+        Logger.verbose("Show Temperature")
         if(sender.state == NSControl.StateValue.on)
         {
             sender.state = .off
@@ -163,7 +164,7 @@ class StatusBarManager: NSObject
     
     @objc private func ShowSettings()
     {
-        print("Show Settings")
+        Logger.verbose("Show Settings")
     }
     
 }

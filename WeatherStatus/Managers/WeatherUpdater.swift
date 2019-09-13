@@ -17,6 +17,28 @@ enum WeatherUpdaterError: Int {
 /// conditions for the users location at a user definable interval
 class WeatherUpdater
 {
+    enum State: CustomStringConvertible
+    {
+        case updatingLocation
+        case updatingWeather
+        case done(Location, CurrentWeather)
+        
+        var description: String {
+            switch self {
+            case .updatingLocation:
+                return "Getting Your Current Location"
+            case .updatingWeather:
+                return "Getting The Latest Weather Report"
+            case .done(let location, let weather):
+                guard let city = location.city, let state = location.state else
+                {
+                    return "\(weather.apparentTemperatureString) \(weather.summary)"
+                }
+                return "\(city), \(state) - \(weather.apparentTemperatureString) \(weather.summary)"
+            }
+        }
+        
+    }
     /// Location Manager is responsible for getting the user's current location
     private let locationManager: LocationManager
     
@@ -40,12 +62,15 @@ class WeatherUpdater
     }
     
     /// Closure called when the forecast is fethced
-    public var onCurrentForecastFetched: ((APIResult<CurrentWeather>) -> Void)?
-    
+    public var onStateChange: ((APIResult<State>) -> Void)?
     
     /// Triggers a new
     public func refreshWeatherConditions()
     {
+        if let onStateChange = onStateChange
+        {
+            onStateChange(.success(.updatingLocation))
+        }
         locationManager.updateLocation()
     }
     
@@ -54,9 +79,11 @@ class WeatherUpdater
         updateInterval = seconds
     }
     
+    // MARK:- Closure Functions
+    
     private func onLocationDetermined(_ result: APIResult<Location> )
     {
-        guard let onCurrentForecastFetched = onCurrentForecastFetched else
+        guard let onStateChange = onStateChange else
         {
             print("Error - Closure not defined")
             return
@@ -64,20 +91,28 @@ class WeatherUpdater
         
         switch result {
         case .failure(let error):
-            print(error)
-            onCurrentForecastFetched(.failure(error))
+            onStateChange(.failure(error))
         case .success(let location):
             guard let coordinates = location.coordinates else
             {
                 let error = createError(domain: errorDomain, code: WeatherUpdaterError.coordinatesNotAvailible.rawValue, message: "Location retrieved but no coordinates were returned")
-                print(error)
-                onCurrentForecastFetched(.failure(error))
+                onStateChange(.failure(error))
                 return
             }
-            
-            forcastClient.fetchCurrentWeather(coordinates, completion: onCurrentForecastFetched)
+            onStateChange(.success(.updatingWeather))
+            forcastClient.fetchCurrentWeather(coordinates) { (result) in
+                switch result
+                {
+                case .failure(let error):
+                    onStateChange(.failure(error))
+                case .success(let weather):
+                    onStateChange(.success(.done(location, weather)))
+                }
+                
+            }
         }
     }
+
     
     
     
