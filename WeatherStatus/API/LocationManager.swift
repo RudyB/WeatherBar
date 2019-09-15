@@ -20,9 +20,8 @@ final class LocationManager: NSObject, CLLocationManagerDelegate {
     
     private let errorDomain = "io.rudybermudez.WeatherStatus.LocationManager"
     
-    private static let DEFAULT_GEOCODER_INTERVAL = TimeInterval(60 * 60) // 1 Hour
     private let geocoder = CLGeocoder()
-    private let geocoderRateLimiter = TimedLimiter(limit: DEFAULT_GEOCODER_INTERVAL)
+    private let geocoderRateLimiter = CountedLimiter(limit: 1)
     
     var onLocationFix: ((APIResult<Location>) -> Void)?
     

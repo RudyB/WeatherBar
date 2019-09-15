@@ -19,6 +19,11 @@ class StatusBarManager: NSObject
     
     private let weatherUpdater: WeatherUpdater
     
+    private lazy var menuButton: StatusMenuButtonView = {
+        let view = StatusMenuButtonView()
+        return view
+    }()
+    
     // MARK:- Menu Items
     
     private lazy var lastUpdateMenuItem: NSMenuItem = {
@@ -79,10 +84,11 @@ class StatusBarManager: NSObject
         let apiKey = ProcessInfo.processInfo.environment["API_KEY"]
         weatherUpdater = WeatherUpdater(APIKey: apiKey ?? "")
         super.init()
-        
         if let button = statusItem.button {
-            button.title = "--℉"
-            button.image = NSImage(named: NSImage.Name("default"))
+            button.addSubview(menuButton)
+            menuButton.frame = button.bounds
+            menuButton.autoresizingMask = [.width, .height]
+            
             ConfigureMenu()
             weatherUpdater.onStateChange = onStateChange
             weatherUpdater.refreshWeatherConditions()
@@ -94,8 +100,6 @@ class StatusBarManager: NSObject
     
     private func onStateChange(_ result: APIResult<WeatherUpdater.State>)
     {
-        guard let button = statusItem.button else { return }
-        
         switch result {
         case .failure(let error):
             Logger.error(error)
@@ -104,7 +108,8 @@ class StatusBarManager: NSObject
             DispatchQueue.main.async { [weak self] in
                 self?.statusMenuItem.title = state.description
                 if case WeatherUpdater.State.done(_, let weather) = state {
-                    button.image = weather.icon.image
+                    self?.menuButton.icon.image = weather.icon.image
+                    self?.menuButton.temperature.stringValue = weather.apparentTemperatureString
                     let dateFormatter = DateFormatter()
                     dateFormatter.timeStyle = .short
                     dateFormatter.dateStyle = .short
@@ -151,14 +156,19 @@ class StatusBarManager: NSObject
     
     @objc func ShowTemperature(sender: NSMenuItem)
     {
-        Logger.verbose("Show Temperature")
         if(sender.state == NSControl.StateValue.on)
         {
+            Logger.verbose("Hide Temperature")
             sender.state = .off
+            menuButton.temperature.isHidden = true
+            statusItem.length = 30
         }
         else
         {
+            Logger.verbose("Show Temperature")
             sender.state = .on
+            menuButton.temperature.isHidden = false
+            statusItem.length = 60
         }
     }
     

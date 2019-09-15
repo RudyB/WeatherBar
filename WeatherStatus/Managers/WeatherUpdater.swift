@@ -7,7 +7,7 @@
 //
 
 import Foundation
-
+import Houston
 
 enum WeatherUpdaterError: Int {
     case coordinatesNotAvailible = 10
@@ -34,7 +34,7 @@ class WeatherUpdater
                 {
                     return "\(weather.apparentTemperatureString) \(weather.summary)"
                 }
-                return "\(city), \(state) - \(weather.apparentTemperatureString) \(weather.summary)"
+                return "\(weather.apparentTemperatureString) \(weather.summary) -- \(city), \(state)"
             }
         }
         
@@ -85,7 +85,7 @@ class WeatherUpdater
     {
         guard let onStateChange = onStateChange else
         {
-            print("Error - Closure not defined")
+            Logger.error("Error - Closure not defined")
             return
         }
         
